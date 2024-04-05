@@ -102,6 +102,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
   "MIMALLOC",                                          # Memory allocators
+  "NAMETAG"                                            # Nametags from OTP
 ])
 
 CheckPandaSourceTree()
@@ -2953,6 +2954,8 @@ if not PkgSkip("ODE"):
     panda_modules.append('ode')
 if not PkgSkip("VRPN"):
     panda_modules.append('vrpn')
+if not PkgSkip("NAMETAG"):
+    panda_modules.append("otp")
 
 panda_modules_code = """
 "This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead."
@@ -3442,6 +3445,9 @@ if not PkgSkip("DIRECT"):
     CopyAllHeaders('direct/src/showbase')
     CopyAllHeaders('direct/src/motiontrail')
     CopyAllHeaders('direct/src/dcparse')
+if not PkgSkip("NAMETAG"):
+    CopyAllHeaders("panda/src/nametag")
+    CopyAllHeaders('panda/src/otpbase')
 
 if not PkgSkip("PANDATOOL"):
     CopyAllHeaders('pandatool/src/pandatoolbase')
@@ -5377,6 +5383,32 @@ if not PkgSkip("DIRECT"):
     TargetAdd('p3dcparse.exe', input='libp3direct.dll')
     TargetAdd('p3dcparse.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('p3dcparse.exe', opts=['ADVAPI'])
+
+#
+# DIRECTORY: panda/src/nametag/
+#
+
+if not PkgSkip("NAMETAG"):
+    OPTS=['DIR:panda/src/nametag', 'BUILDING:OTP']
+    TargetAdd('p3nametag_composite1.obj', opts=OPTS, input='nametag_composite1.cxx')
+    TargetAdd('p3nametag_composite2.obj', opts=OPTS, input='nametag_composite2.cxx')
+
+    OPTS=['DIR:panda/src/nametag']
+    IGATEFILES=GetDirectoryContents('panda/src/nametag', ["*.h", "*_composite*.cxx"])
+    TargetAdd('libp3nametag.in', opts=OPTS, input=IGATEFILES)
+    TargetAdd('libp3nametag.in', opts=['IMOD:panda3d.otp', 'ILIB:libp3nametag', 'SRCDIR:panda/src/nametag'])
+
+
+if not PkgSkip("NAMETAG"):
+    TargetAdd('libp3otp.dll', input='p3nametag_composite1.obj')
+    TargetAdd('libp3otp.dll', input='p3nametag_composite2.obj')
+
+if not PkgSkip("NAMETAG"):
+    PyTargetAdd('otp_module.obj', input='libp3nametag.in')
+
+if not PkgSkip("NAMETAG"):
+    PyTargetAdd('otp.pyd', input='libp3nametag_igate.obj')
+
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
